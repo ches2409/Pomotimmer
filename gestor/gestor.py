@@ -1,5 +1,6 @@
 import reflex as rx
 
+from gestor.pages.category import category_form
 from gestor.states.category_satate import CategoryState
 from rxconfig import config
 
@@ -10,29 +11,7 @@ from rxconfig import config
 
 def index() -> rx.Component:
     return rx.container(
-        rx.vstack(
-            rx.heading("Prueba de gestor"),
-            rx.input(
-                placeholder="ID categoria",
-                on_change=CategoryState.actualizar_id
-            ),
-            rx.button(
-                "Buscar",
-                on_click=CategoryState.buscar_categoria
-            ),
-            rx.hstack(
-                rx.text(
-                    CategoryState.category_name, color="green"
-                ),
-                rx.spacer(),
-                rx.text(
-                    CategoryState.category_description, color="darkseagreen"
-                )
-            ),
-            rx.text(
-                CategoryState.error, color="red"
-            )
-        )
+        category_form()
     )
 
 

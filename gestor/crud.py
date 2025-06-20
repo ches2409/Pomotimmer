@@ -3,7 +3,7 @@ from typing import List
 from sqlalchemy.orm import Session
 
 from gestor.database.database import SessionLocal
-from gestor.models import Category
+from gestor.database.models import Category
 
 # --------------------------------
 # Utils

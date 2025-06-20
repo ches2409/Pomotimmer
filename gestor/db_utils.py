@@ -1,8 +1,7 @@
 from sqlalchemy.exc import NoResultFound, SQLAlchemyError
-from sqlalchemy.orm import Session
 
 from gestor.database.database import SessionLocal
-from gestor.models import Category
+from gestor.database.models import Category
 
 def get_category_by_id(id:int=None) -> Category|None:
     # with SessionLocal() as db:
@@ -10,7 +9,7 @@ def get_category_by_id(id:int=None) -> Category|None:
 
     try:
         if id is None:
-            raise ValueError("El ID no puede estar vacio")
+            raise ValueError("👁️ El ID no puede estar vacio")
 
         with SessionLocal() as db:
             category=db.get(Category, id)

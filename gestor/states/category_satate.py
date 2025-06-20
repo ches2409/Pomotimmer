@@ -1,25 +1,44 @@
 import reflex as rx
+from sqlalchemy.exc import SQLAlchemyError
+
+from gestor.database.database import SessionLocal
+from gestor.database.models import Category
 from gestor.db_utils import get_category_by_id
 
 class CategoryState(rx.State):
-    category_id:int=0
-    category_name:str=""
-    category_description:str=""
-    error:str=""
+    name:str=""
+    description:str=""
+    message:str=""
+    categorias:list[Category]=[]
+    selected_category_id:int |None=None
 
-    def actualizar_id(self,value:str):
+    @rx.event
+    def set_name(self,value:str):
+        self.name=value
+
+    @rx.event
+    def set_description(self,value:str):
+        self.description=value
+
+    @rx.event
+    def create_category(self):
+        if not self.name.strip():
+            self.message="❌ El nombre no puede estar vacio"
+            return
         try:
-            self.category_id = int(value)
-            self.error = ""
-        except ValueError:
-            self.category_id = 0
-            self.error = "❌ ID no valido"
+            with SessionLocal() as db:
+                category = Category(name=self.name.strip(),description=self.description)
+                db.add(category)
+                db.commit()
+                db.refresh(category)
+                self.message=f"✅ La categoria {category.name} fue creada con exito"
+                self.name="" # Resetea el input
+                self.description=""
+        except SQLAlchemyError as e:
+            self.message=f"❌ Error al crear la categoria {category.name}: {str(e)}"
 
-    def buscar_categoria(self):
-        categoria = get_category_by_id(self.category_id)
-        if categoria is None:
-            self.error="❌ No se pudo encontrar la categoria"
-        else:
-            self.category_name = categoria.name
-            self.category_description = categoria.description
-            self.error=""
+
+    @rx.event
+    def load_categories(self):
+        with SessionLocal() as db:
+            self.categorias=db.query(Category).all()

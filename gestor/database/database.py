@@ -31,6 +31,5 @@ def init_db():
     Llamar en desarrollo o en test antes de usar el CRUD"""
 
     # Importar aqui para asegurar que todos los modelos estén registrados
-    from gestor.models import Base as ModelsBase
     Base.metadata.create_all(bind=engine)
 
