@@ -1,16 +1,24 @@
 import reflex as rx
+from reflex.vars import Var
 from sqlalchemy.exc import SQLAlchemyError
 
 from gestor.database.database import SessionLocal
 from gestor.database.models import Category
-from gestor.db_utils import get_category_by_id
 
 class CategoryState(rx.State):
+    # Inputs del formulario
     name:str=""
     description:str=""
+    temp_id:int=0
+    # Mensaje de feedback
     message:str=""
-    categorias:list[Category]=[]
-    selected_category_id:int |None=None
+
+    # Listado de categorias
+    categories:list[dict]=[]
+
+    selected_category:dict={} #Crea una variable de estado para almacenar resultados de un objeto
+
+
 
     @rx.event
     def set_name(self,value:str):
@@ -19,6 +27,11 @@ class CategoryState(rx.State):
     @rx.event
     def set_description(self,value:str):
         self.description=value
+
+    @rx.event
+    def set_temp_id(self,value:str):
+        self.temp_id=int(value) if value.isdigit() else 0
+
 
     @rx.event
     def create_category(self):
@@ -31,14 +44,42 @@ class CategoryState(rx.State):
                 db.add(category)
                 db.commit()
                 db.refresh(category)
+
+                # Limpiar inputs y mostrar mensaje
                 self.message=f"✅ La categoria {category.name} fue creada con exito"
                 self.name="" # Resetea el input
                 self.description=""
+
+                # Opcional: refrescar la lista
+                self.get_all_categories()
+
         except SQLAlchemyError as e:
             self.message=f"❌ Error al crear la categoria {category.name}: {str(e)}"
 
 
     @rx.event
-    def load_categories(self):
+    def get_all_categories(self):
         with SessionLocal() as db:
-            self.categorias=db.query(Category).all()
+            result=db.query(Category).all()
+
+            self.categories=[
+                {"id":cat.id, "name":cat.name, "description":cat.description}
+                for cat in result
+            ]
+
+    @rx.event
+    def get_category_by_id(self,category_id:int):
+        with SessionLocal() as db:
+            try:
+                category=db.get(Category,category_id)
+                if category:
+                    self.selected_category={
+                        "id":category.id,
+                        "name":category.name,
+                        "description":category.description
+                    }
+                else:
+                    self.selected_category={}
+            except Exception as e:
+                print(f"❌ Error al obtener la categoria: {str(e)}")
+                self.selected_category={}
