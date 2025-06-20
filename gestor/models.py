@@ -11,8 +11,8 @@ class Category(Base):
     __table_args__ = {'sqlite_autoincrement': True}
 
     id:Mapped[int]=mapped_column(Integer, primary_key=True)
-    name:Mapped[str]=mapped_column(String(50), nullable=False)
-    description:Mapped[str]=mapped_column(String(50), nullable=False)
+    name:Mapped[str]=mapped_column(String(50))
+    description:Mapped[str]=mapped_column(String(50))
 
     # Relacion 1:N => una categoria tiene muchas tareas
     tasks:Mapped[list["Task"]]=relationship(

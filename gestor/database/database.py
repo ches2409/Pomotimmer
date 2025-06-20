@@ -19,7 +19,7 @@ DATABASE_URL=f"sqlite:///{db_path}"
 engine=create_engine(DATABASE_URL, echo=False)
 
 # Sesion local para consultas
-Session=sessionmaker(bind=engine)
+SessionLocal=sessionmaker(bind=engine)
 
 # Clase para modelos
 class Base(DeclarativeBase):
