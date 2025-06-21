@@ -1,5 +1,4 @@
 import reflex as rx
-from reflex.vars import Var
 from sqlalchemy.exc import SQLAlchemyError
 
 from gestor.database.database import SessionLocal
@@ -10,16 +9,17 @@ class CategoryState(rx.State):
     name:str=""
     description:str=""
     temp_id:int=0
+
     # Mensaje de feedback
     message:str=""
 
     # Listado de categorias
     categories:list[dict]=[]
 
+    # Diccionario con los datos de la categoria
     selected_category:dict={} #Crea una variable de estado para almacenar resultados de un objeto
 
-
-
+    #Asignacion de valores
     @rx.event
     def set_name(self,value:str):
         self.name=value
@@ -32,6 +32,7 @@ class CategoryState(rx.State):
     def set_temp_id(self,value:str):
         self.temp_id=int(value) if value.isdigit() else 0
 
+    # CRUD de categorias
 
     @rx.event
     def create_category(self):
@@ -83,3 +84,24 @@ class CategoryState(rx.State):
             except Exception as e:
                 print(f"❌ Error al obtener la categoria: {str(e)}")
                 self.selected_category={}
+
+    @rx.event
+    def update_category(self,category_id:int):
+        self.name=""
+        self.description=""
+        with SessionLocal() as db:
+
+            try:
+                category = db.get(Category, category_id)
+                if category:
+                    if self.name.strip():
+                        category.name=self.name.strip()
+                        print(f"Nombre de categoria cambiado: {category.name}")
+                    if self.description.strip():
+                        category.description=self.description.strip()
+                        print(f"Descripcion de categoria cambiada: {category.description}")
+                db.commit()
+            except Exception as e:
+                self.message=f"❌ Error al obtener la categoria: {str(e)}"
+
+

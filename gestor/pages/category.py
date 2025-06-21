@@ -6,6 +6,10 @@ from gestor.states.category_satate import CategoryState
 
 def category_list_view():
     return rx.vstack(
+        rx.heading(
+            "Listar caategorias",
+            size="7"
+        ),
         rx.button(
             "Cargar categorias",
             on_click=CategoryState.get_all_categories
@@ -37,7 +41,7 @@ def category_details()->rx.Component:
             size="7"
         ),
         rx.cond(
-            CategoryState.selected_category.get("id") !=None,
+            CategoryState.selected_category["id"] !=None,
             rx.vstack(
                 rx.text(
                     f"ID: {CategoryState.selected_category['id']}",
@@ -57,6 +61,10 @@ def category_details()->rx.Component:
 
 def category_lookup()->rx.Component:
     return rx.vstack(
+        rx.heading(
+            "Ver una categoria",
+            size="7"
+        ),
         rx.input(
             placeholder="Introduce el ID de la categoria",
             on_change=CategoryState.set_temp_id,
@@ -96,4 +104,30 @@ def category_form():
                 "red"
             )
         )
+    )
+
+def prueba():
+    return vstack(
+        rx.heading(
+            "Prueba para ver el id"
+        ),
+        rx.input(
+            placeholder="Introduce el ID de la categoria",
+            on_change=CategoryState.set_temp_id,
+        ),
+        rx.input(
+            placeholder="Nuevo nombre de la categoria",
+            on_change=CategoryState.set_name,
+            value=CategoryState.name
+        ),
+        rx.input(
+            placeholder="Nueva descripcion de la categoria",
+            on_change=CategoryState.set_description,
+            value=CategoryState.description
+        ),
+        rx.button(
+            "Guardar cambios",
+            on_click=CategoryState.update_category(CategoryState.temp_id)
+
+        ),
     )
