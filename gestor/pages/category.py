@@ -115,19 +115,22 @@ def prueba():
             placeholder="Introduce el ID de la categoria",
             on_change=CategoryState.set_temp_id,
         ),
-        rx.input(
-            placeholder="Nuevo nombre de la categoria",
-            on_change=CategoryState.set_name,
-            value=CategoryState.name
-        ),
-        rx.input(
-            placeholder="Nueva descripcion de la categoria",
-            on_change=CategoryState.set_description,
-            value=CategoryState.description
-        ),
+        # rx.input(
+        #     placeholder="Nuevo nombre de la categoria",
+        #     on_change=CategoryState.set_name,
+        #     value=CategoryState.name
+        # ),
+        # rx.input(
+        #     placeholder="Nueva descripcion de la categoria",
+        #     on_change=CategoryState.set_description,
+        #     value=CategoryState.description
+        # ),
         rx.button(
             "Guardar cambios",
-            on_click=CategoryState.update_category(CategoryState.temp_id)
+            on_click=CategoryState.delete_category(CategoryState.temp_id)
 
         ),
+        rx.text(
+            CategoryState.message,
+        )
     )

@@ -128,11 +128,17 @@ class CategoryState(rx.State):
                 self.message=f"❌ Error al obtener la categoria: {type(e).__name__}"
                 logger.error(f"Error al obtener la categoria: {str(e)}")
 
-@rx.event
-def delete_category(category_id:int):
-    with SessionLocal() as db:
-        category = db.get(Category, category_id)
-        if not category_id:
-            print(f"No se encuentra")
-            return
+    @rx.event
+    def delete_category(self, category_id:int):
+        with SessionLocal() as db:
+            category = db.get(Category, category_id)
+            if not category:
+                self.message = f"❌ No se encuentra {category_id}"
+                logger.error(f"categoria: {category_id} no encontrada para borrar")
+                return
+            self.message=f"✅ Se ha borrado la categoria ({category.name}) exitosamente"
+            logger.info(f"categoria {category_id} - {category.name} borrada")
+            db.delete(category)
+            db.commit()
+
 
