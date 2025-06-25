@@ -109,7 +109,7 @@ def category_form():
 def prueba():
     return vstack(
         rx.heading(
-            "Prueba para ver el id"
+            "Actualizar una categoria",
         ),
         rx.input(
             placeholder="Introduce el ID de la categoria",

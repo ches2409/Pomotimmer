@@ -1,6 +1,8 @@
 import reflex as rx
 from sqlalchemy.exc import SQLAlchemyError
 
+from gestor.logger import logger
+
 from gestor.crud import get_all_categories
 from gestor.database.database import SessionLocal
 from gestor.database.models import Category
@@ -49,6 +51,8 @@ class CategoryState(rx.State):
 
                 # Limpiar inputs y mostrar mensaje
                 self.message=f"✅ La categoria {category.name} fue creada con exito"
+                logger.info(f"Se creo una categoria: {category.name}")
+
                 self.name="" # Resetea el input
                 self.description=""
 
@@ -83,7 +87,7 @@ class CategoryState(rx.State):
                 else:
                     self.selected_category={}
             except Exception as e:
-                print(f"❌ Error al obtener la categoria: {str(e)}")
+                logger.error(f"❌ Error al obtener la categoria: {str(e)}")
                 self.selected_category={}
 
     @rx.event
@@ -105,21 +109,30 @@ class CategoryState(rx.State):
                     if self.name not in categories_names:
                         if self.name.strip():
                             category.name=self.name.strip()
-                            print(f"Nombre de categoria cambiado: {category.name}")
+                            logger.info(f"Nombre de categoria cambiado: {category.name}")
                         if self.description.strip():
                             category.description=self.description.strip()
-                            print(f"Descripcion de categoria cambiada: {category.description}")
+                            logger.info(f"Descripcion de categoria cambiada: {category.description}")
                         db.commit()
                         db.refresh(category)
 
                         self.message = f"✅ La categoria {category.name} fue Actualizada con exito"
                     else:
                         self.message=f"❌ La categoria {self.name} ya existe, no se guardan cambios"
+                        logger.warning(f"Duplicado detectado: {self.name}")
 
                 # Limpiar inputs
                 self.name = ""  # Resetea el input
                 self.description = ""
             except Exception as e:
                 self.message=f"❌ Error al obtener la categoria: {type(e).__name__}"
+                logger.error(f"Error al obtener la categoria: {str(e)}")
 
+@rx.event
+def delete_category(category_id:int):
+    with SessionLocal() as db:
+        category = db.get(Category, category_id)
+        if not category_id:
+            print(f"No se encuentra")
+            return
 
