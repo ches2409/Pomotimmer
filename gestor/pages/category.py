@@ -7,7 +7,7 @@ from gestor.states.category_satate import CategoryState
 def category_list_view():
     return rx.vstack(
         rx.heading(
-            "Listar caategorias",
+            "Listar categorias",
             size="7"
         ),
         rx.button(

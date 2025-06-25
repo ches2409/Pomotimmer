@@ -1,6 +1,7 @@
 import reflex as rx
 from sqlalchemy.exc import SQLAlchemyError
 
+from gestor.crud import get_all_categories
 from gestor.database.database import SessionLocal
 from gestor.database.models import Category
 
@@ -87,21 +88,38 @@ class CategoryState(rx.State):
 
     @rx.event
     def update_category(self,category_id:int):
-        self.name=""
-        self.description=""
         with SessionLocal() as db:
 
             try:
                 category = db.get(Category, category_id)
                 if category:
-                    if self.name.strip():
-                        category.name=self.name.strip()
-                        print(f"Nombre de categoria cambiado: {category.name}")
-                    if self.description.strip():
-                        category.description=self.description.strip()
-                        print(f"Descripcion de categoria cambiada: {category.description}")
-                db.commit()
+
+                    self.categories=[
+                        {"id":cat.id,"name":cat.name,"description":cat.description}
+                        for cat in db.query(Category).all()
+                    ]
+                    categories_names=[]
+                    for c in self.categories:
+                        categories_names.append(c["name"])
+
+                    if self.name not in categories_names:
+                        if self.name.strip():
+                            category.name=self.name.strip()
+                            print(f"Nombre de categoria cambiado: {category.name}")
+                        if self.description.strip():
+                            category.description=self.description.strip()
+                            print(f"Descripcion de categoria cambiada: {category.description}")
+                        db.commit()
+                        db.refresh(category)
+
+                        self.message = f"✅ La categoria {category.name} fue Actualizada con exito"
+                    else:
+                        self.message=f"❌ La categoria {self.name} ya existe, no se guardan cambios"
+
+                # Limpiar inputs
+                self.name = ""  # Resetea el input
+                self.description = ""
             except Exception as e:
-                self.message=f"❌ Error al obtener la categoria: {str(e)}"
+                self.message=f"❌ Error al obtener la categoria: {type(e).__name__}"
 
 
