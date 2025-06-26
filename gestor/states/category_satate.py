@@ -130,14 +130,31 @@ class CategoryState(rx.State):
     @rx.event
     def delete_category(self, category_id:int):
         with SessionLocal() as db:
-            category = db.get(Category, category_id)
-            if not category:
-                self.message = f"❌ No se encuentra {category_id}"
-                logger.error(f"categoria: {category_id} no encontrada para borrar")
-                return
-            self.message=f"✅ Se ha borrado la categoria ({category.name}) exitosamente"
-            logger.info(f"categoria {category_id} - {category.name} borrada")
-            db.delete(category)
-            db.commit()
+
+            try:
+                # Buscar categoria
+                category = db.get(Category, category_id)
+
+                if not category:
+                    self.message = f"❌ No se encuentra {category_id}"
+                    logger.warning(f"categoria: {category_id} no encontrada para borrar")
+                    return
+
+                # Eliminar categoria
+                db.delete(category)
+                db.commit()
+
+                self.message = f"✅ Se ha borrado la categoria ({category.name}) exitosamente"
+                logger.info(f"categoria {category_id} - {category.name} borrada")
+
+                # Actualizar la lista
+                self.get_all_categories()
+
+            except SQLAlchemyError as e:
+                self.message=("❌ Error de la base de datos al eliminar")
+                logger.error(f"Error en la BD al eliminar '{category_id}': {type(e).__name__} - {str(e)}")
+            except Exception as e:
+                self.message="❌ Error inesperado al Eliminar categoria"
+                logger.error(f"Error inseperado en delete_category: {e}")
 
 
