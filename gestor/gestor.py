@@ -12,7 +12,7 @@ from rxconfig import config
 
 def index() -> rx.Component:
     return rx.hstack(
-        task_form()
+        category_form()
     )
 
 

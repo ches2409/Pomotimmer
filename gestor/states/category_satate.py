@@ -12,6 +12,8 @@ class CategoryState(rx.State):
     name:str=""
     description:str=""
     temp_id:int=0
+    temp_name:str=""
+    show_modal:bool=False
 
     # Mensaje de feedback
     message:str=""
@@ -34,6 +36,8 @@ class CategoryState(rx.State):
     @rx.event
     def set_temp_id(self,value:str):
         self.temp_id=int(value) if value.isdigit() else 0
+
+
 
     # CRUD de categorias
 
@@ -128,42 +132,72 @@ class CategoryState(rx.State):
                 self.message=f"❌ Error al obtener la categoria: {type(e).__name__}"
                 logger.error(f"Error al obtener la categoria: {str(e)}")
 
+    # Preparar el modal para eliminar
     @rx.event
-    def delete_category(self, category_id:int):
+    def ask_delete_category(self, category_id: int):
+        # Buscar la categoria por su ID
+
+        """
+        El for crudo (completo el for):
+        cat=None
+        for c in self.categories:
+            if c["id"]==category_id:
+                cat=c
+                break
+        """
+
+        # Forma Pythonic (concisa y elegante) // next(iterable,valor_defecto)
+        cat = next((c for c in self.categories if c["id"] == category_id), None)
+
+        if cat:
+            self.temp_id = cat["id"]
+            self.temp_name = cat["name"]
+            self.show_modal = True
+
+    # Cancelar la eliminacion
+    @rx.event
+    def cancel_delete(self):
+        self.temp_id = 0
+        self.temp_name = ""
+        self.show_modal = False
+
+    @rx.event
+    def delete_category(self):
         with SessionLocal() as db:
 
             try:
                 # Buscar categoria
-                category = db.get(Category, category_id)
-
-                if not category:
-                    self.message = f"❌ No se encuentra {category_id}"
-                    logger.warning(f"categoria: {category_id} no encontrada para borrar")
-                    return
+                category = db.get(Category, self.temp_id)
 
                 # Verificar si existen tareas asociadas
-                has_tasks=db.query(Task).filter_by(category_id=category_id).first()
+                has_tasks=db.query(Task).filter_by(category_id=self.temp_id).first()
 
                 if has_tasks:
                     self.message=f"No se puede eliminar la categoria {category.name} porque tiene tareas asociadas"
                     logger.warning(f"intento de borrado de categoria '{category.name}' con tareas asociadas")
+
                     return
 
-                # Eliminar categoria
-                db.delete(category)
-                db.commit()
+                if category:
 
-                self.message = f"✅ Se ha borrado la categoria ({category.name}) exitosamente"
-                logger.info(f"categoria {category_id} - {category.name} borrada")
+                    # Eliminar categoria
+                    db.delete(category)
+                    db.commit()
 
-                # Actualizar la lista
-                self.get_all_categories()
+                    self.message = f"✅ Se ha borrado la categoria ({category.name}) exitosamente"
+                    logger.info(f"categoria {self.temp_id} - {category.name} borrada")
+
+                    # Actualizar la lista
+                    self.get_all_categories()
 
             except SQLAlchemyError as e:
                 self.message=("❌ Error de la base de datos al eliminar")
-                logger.error(f"Error en la BD al eliminar '{category_id}': {type(e).__name__} - {str(e)}")
+                logger.error(f"Error en la BD al eliminar '{self.temp_id}': {type(e).__name__} - {str(e)}")
             except Exception as e:
                 self.message="❌ Error inesperado al Eliminar categoria"
                 logger.error(f"Error inseperado en delete_category: {e}")
+
+            finally:
+                self.show_modal = False
 
 
