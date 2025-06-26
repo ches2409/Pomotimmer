@@ -17,9 +17,7 @@ class Category(Base):
     # Relacion 1:N => una categoria tiene muchas tareas
     tasks:Mapped[list["Task"]]=relationship(
         "Task",
-        back_populates="category",
-        cascade="all, delete",
-        passive_deletes=True
+        back_populates="category"
     )
 
     def __repr__(self):

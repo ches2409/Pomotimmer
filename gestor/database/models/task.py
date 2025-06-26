@@ -18,7 +18,7 @@ class Task(Base):
 
     # FK hacia categories.id
     category_id:Mapped[int]=mapped_column(
-        ForeignKey('categories.id', ondelete='CASCADE'),
+        ForeignKey('categories.id', ondelete='RESTRICT'),
         nullable=False,
     )
 

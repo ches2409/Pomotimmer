@@ -4,7 +4,8 @@ from sqlalchemy.exc import SQLAlchemyError
 from gestor.logger import logger
 
 from gestor.database.database import SessionLocal
-from gestor.database.models import Category
+from gestor.database.models import Category,Task
+
 
 class CategoryState(rx.State):
     # Inputs del formulario
@@ -138,6 +139,14 @@ class CategoryState(rx.State):
                 if not category:
                     self.message = f"❌ No se encuentra {category_id}"
                     logger.warning(f"categoria: {category_id} no encontrada para borrar")
+                    return
+
+                # Verificar si existen tareas asociadas
+                has_tasks=db.query(Task).filter_by(category_id=category_id).first()
+
+                if has_tasks:
+                    self.message=f"No se puede eliminar la categoria {category.name} porque tiene tareas asociadas"
+                    logger.warning(f"intento de borrado de categoria '{category.name}' con tareas asociadas")
                     return
 
                 # Eliminar categoria
