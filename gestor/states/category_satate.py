@@ -3,7 +3,6 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from gestor.logger import logger
 
-from gestor.crud import get_all_categories
 from gestor.database.database import SessionLocal
 from gestor.database.models import Category
 
