@@ -1,6 +1,7 @@
 import reflex as rx
 
 from gestor.components.alert_box import alert_box
+from gestor.components.modal_edit_form import modalEditForm
 from gestor.states.category_satate import CategoryState
 
 
@@ -32,6 +33,7 @@ def render_category(cat:dict)->rx.Component:
                 rx.button(
                     "📝 Editar",
                     color_scheme="blue",
+                    on_click=lambda:CategoryState.open_edit_modal(cat["id"]),
                 ),
             ),
         ),
@@ -40,96 +42,6 @@ def render_category(cat:dict)->rx.Component:
         border_radius="lg",
         my="2",
         width="100%",
-    )
-
-def category_list_view()->rx.Component:
-    return rx.vstack(
-        rx.heading(
-            "Listar categorias",
-            size="7"
-        ),
-        rx.button(
-            "Cargar categorias",
-            on_click=CategoryState.get_all_categories
-        ),
-        rx.foreach(CategoryState.categories,render_category),
-        rx.button(
-            "🔄 Recargar Categorías",
-            on_click=CategoryState.get_all_categories,
-            mt="4",
-            color_scheme="teal",
-        ),
-        rx.cond(
-            CategoryState.show_modal,
-            rx.dialog.root(
-                rx.dialog.content(
-                    rx.dialog.title("Confirmar eliminación"),
-                    rx.dialog.description(
-                        rx.text(f"¿Estás seguro de que deseas eliminar la categoría '{CategoryState.temp_name}'?")
-                    ),
-                    rx.flex(
-                        rx.button("Cancelar", on_click=CategoryState.cancel_delete, color_scheme="gray"),
-
-                        rx.button("Eliminar", on_click=CategoryState.delete_category, color_scheme="red"),
-                        justify="end",
-                        gap="2rem",
-                        mt="2rem",
-                        width="100%",
-                    ),
-                    initial={"opacity": 0,"y":-50},
-                    animate={"opacity": 1,"y":0},
-                    exit={"opacity": 0,"y":50},
-                    transition={"duration": 5},
-                ),
-                open=CategoryState.show_modal,
-            )
-        ),
-        spacing="4",
-        align="stretch",
-        p="6",
-    )
-
-
-def category_details()->rx.Component:
-    return rx.box(
-        rx.heading(
-            "Detalles de la categoria",
-            size="7"
-        ),
-        rx.cond(
-            CategoryState.selected_category["id"] !=None,
-            rx.vstack(
-                rx.text(
-                    f"ID: {CategoryState.selected_category['id']}",
-                ),
-                rx.text(
-                    f"Nombre: {CategoryState.selected_category['name']}",
-                ),
-                rx.text(
-                    f"Descripción: {CategoryState.selected_category['description']}",
-                )
-            ),
-            rx.text(
-                "Selecciona una categoria para ver detalles."
-            )
-        )
-    )
-
-def category_lookup()->rx.Component:
-    return rx.vstack(
-        rx.heading(
-            "Ver una categoria",
-            size="7"
-        ),
-        rx.input(
-            placeholder="Introduce el ID de la categoria",
-            on_change=CategoryState.set_temp_id,
-        ),
-        rx.button(
-            "Buscar categoria",
-            on_click=CategoryState.get_category_by_id(CategoryState.temp_id)
-        ),
-        category_details()
     )
 
 def category_form()->rx.Component:
@@ -233,6 +145,30 @@ def category_form()->rx.Component:
                     open=CategoryState.show_modal,
                 )
             ),
+            rx.cond(
+                CategoryState.show_modal_edit,
+                modalEditForm(
+                    title="Editar categoria",
+                    description="Modifica el nombre o la descripción de una categoria",
+                    show=CategoryState.show_modal_edit,
+                    on_cancel=CategoryState.cancel_edit,
+                    on_submit=lambda: CategoryState.update_category(CategoryState.temp_id),
+                    fields=[
+                        rx.input(
+                            placeholder="Nombre de la categoria",
+                            value=CategoryState.name,
+                            on_change=CategoryState.set_name,
+                            width="100%",
+                        ),
+                        rx.text_area(
+                            placeholder="Descripcion de la categoria",
+                            on_change=CategoryState.set_description,
+                            value=CategoryState.description,
+                            width="100%",
+                        )
+                    ]
+                ),
+            ),
             spacing="6",
             align="stretch",
         ),
@@ -240,33 +176,4 @@ def category_form()->rx.Component:
         margin_x="auto",
         padding_y=6
 
-    )
-
-def prueba():
-    return vstack(
-        rx.heading(
-            "Actualizar una categoria",
-        ),
-        rx.input(
-            placeholder="Introduce el ID de la categoria",
-            on_change=CategoryState.set_temp_id,
-        ),
-        # rx.input(
-        #     placeholder="Nuevo nombre de la categoria",
-        #     on_change=CategoryState.set_name,
-        #     value=CategoryState.name
-        # ),
-        # rx.input(
-        #     placeholder="Nueva descripcion de la categoria",
-        #     on_change=CategoryState.set_description,
-        #     value=CategoryState.description
-        # ),
-        rx.button(
-            "Guardar cambios",
-            on_click=CategoryState.delete_category(CategoryState.temp_id)
-
-        ),
-        rx.text(
-            CategoryState.message,
-        )
     )

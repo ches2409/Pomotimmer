@@ -1,5 +1,6 @@
 import reflex as rx
 from sqlalchemy.exc import SQLAlchemyError
+from unicodedata import category
 
 from gestor.logger import logger
 
@@ -13,7 +14,11 @@ class CategoryState(rx.State):
     description:str=""
     temp_id:int=0
     temp_name:str=""
+
     show_modal:bool=False
+
+    # COntrolar modal de edicion
+    show_modal_edit:bool=False
 
     # Mensaje de feedback
     message:str=""
@@ -37,6 +42,24 @@ class CategoryState(rx.State):
     def set_temp_id(self,value:str):
         self.temp_id=int(value) if value.isdigit() else 0
 
+    @rx.event
+    def open_edit_modal(self,category_id:int):
+        """Abre el modal de edicion con los datos precargados de la categoria"""
+        cat=next((c for c in self.categories if c['id']==category_id),None)
+        if cat:
+            self.temp_id=cat['id']
+            self.name=cat['name']
+            self.description=cat['description']
+            self.show_modal_edit=True
+            self.message="" # Limpiar mensaje previo si lo hay
+
+    @rx.event
+    def cancel_edit(self):
+        """Cierra el modal de edicion y limpia los valores"""
+        self.temp_id=0
+        self.temp_name=""
+        self.description=""
+        self.show_modal_edit=False
 
 
     # CRUD de categorias
@@ -110,7 +133,13 @@ class CategoryState(rx.State):
                     for c in self.categories:
                         categories_names.append(c["name"])
 
-                    if self.name not in categories_names:
+                    self.get_all_categories()
+                    existing_names=[
+                        c["name"] for c in self.categories if c["id"]!=category_id
+                    ]
+
+
+                    if self.name not in existing_names:
                         if self.name.strip():
                             category.name=self.name.strip()
                             logger.info(f"Nombre de categoria cambiado: {category.name}")
@@ -131,6 +160,8 @@ class CategoryState(rx.State):
             except Exception as e:
                 self.message=f"❌ Error al obtener la categoria: {type(e).__name__}"
                 logger.error(f"Error al obtener la categoria: {str(e)}")
+            finally:
+                self.show_modal_edit = False
 
     # Preparar el modal para eliminar
     @rx.event

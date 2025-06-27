@@ -1,5 +1,6 @@
 import reflex as rx
 
+# Asignar colres en variables
 green100="#c8e6c9"
 green800="#2e7d32"
 red100="#ffcdd2"
@@ -10,6 +11,7 @@ yellow100="#fff9c4"
 yellow800="#f9a825"
 gray100="#f5f5f5"
 gray800="#424242"
+
 def alert_box(message: str, status: str = "success"):
     color_map = {
         "success": (green100, green800),
