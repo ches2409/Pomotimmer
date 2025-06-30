@@ -1,7 +1,7 @@
 import reflex as rx
 
 from gestor.components.alert_box import alert_box
-from gestor.components.modal_edit_form import modalEditForm
+from gestor.components.modal_edit_form import modalEditForm, render_obj
 from gestor.states.category_satate import CategoryState
 
 
@@ -55,8 +55,8 @@ def category_form()->rx.Component:
 
             # Mensajes de informacion
             rx.cond(
-                CategoryState.message!="",
-                alert_box(CategoryState.message, status="info")
+                CategoryState.message != "",
+                alert_box(CategoryState.message, status="info", tone=100)
             ),
 
             # Formulario
@@ -116,7 +116,7 @@ def category_form()->rx.Component:
             rx.vstack(
                 rx.foreach(
                     CategoryState.categories,
-                    render_category
+                    render_obj
                 ),
                 spacing="4"
             ),

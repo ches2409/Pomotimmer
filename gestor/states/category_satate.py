@@ -6,6 +6,7 @@ from gestor.logger import logger
 
 from gestor.database.database import SessionLocal
 from gestor.database.models import Category,Task
+from gestor.utils import fetch_all_categories
 
 
 class CategoryState(rx.State):
@@ -92,13 +93,13 @@ class CategoryState(rx.State):
 
     @rx.event
     def get_all_categories(self):
-        with SessionLocal() as db:
-            result=db.query(Category).all()
-
-            self.categories=[
-                {"id":cat.id, "name":cat.name, "description":cat.description}
-                for cat in result
-            ]
+        # with SessionLocal() as db:
+            # result=db.query(Category).all()
+        result=fetch_all_categories()
+        self.categories=[
+            {"id":cat.id, "name":cat.name, "description":cat.description}
+            for cat in result
+        ]
 
     @rx.event
     def get_category_by_id(self,category_id:int):
